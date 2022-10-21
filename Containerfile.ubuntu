@@ -1,0 +1,27 @@
+FROM ubuntu:focal
+
+RUN groupadd -r mysql && useradd -r -g mysql mysql
+
+RUN apt-get update && apt-get upgrade -y
+
+RUN apt-get install -y software-properties-common gpg inetutils-ping
+
+# Add mariadb and required packages
+RUN apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8
+RUN add-apt-repository 'deb [arch=arm64] https://archive.mariadb.org/mariadb-10.5.12/repo/ubuntu focal main'
+RUN apt-get update
+RUN apt-get install -y mariadb-server mariadb-client libmariadb3 mariadb-common mariadb-plugin-cracklib-password-check mariadb-plugin-connect
+
+RUN su mysql
+
+VOLUME /var/lib/mariadb
+VOLUME /var/lib/mariadb-dump
+VOLUME /var/lib/mariadb-conf
+
+COPY ./entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+EXPOSE 3306
+
+ENTRYPOINT ["entrypoint.sh"]
+CMD ["mariadbd-safe"]

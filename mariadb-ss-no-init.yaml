@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mariadb-ss
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      mariadb: ss
+  serviceName: mariadb-svc
+  template:
+    metadata:
+      labels:
+        mariadb: ss
+    spec:
+      containers:
+      - env:
+        - name: MARIADB_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: root_password
+              name: mariadb-secret
+        image: {{REGISTRY_IMAGE}}
+        imagePullPolicy: Always
+        name: mariadb-ctr
+        ports:
+        - containerPort: 3306
+        volumeMounts:
+        - name: mariadb-pvc-v
+          mountPath: /var/lib/mysql
+      volumes:
+      - name: mariadb-pvc-v
+        persistentVolumeClaim:
+          claimName: mariadb-pvc

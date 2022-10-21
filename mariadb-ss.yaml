@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mariadb-ss
+spec:
+  replicas: 15
+  selector:
+    matchLabels:
+      mariadb: ss
+  serviceName: mariadb-svc
+  template:
+    metadata:
+      labels:
+        mariadb: ss
+    spec:
+      containers:
+      - env:
+        - name: MARIADB_PRIMARY_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: primary_root_password
+              name: mariadb-secret
+        - name: MARIADB_REPLICA_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: replica_root_password
+              name: mariadb-secret
+        - name: MARIADB_PRIMARY_CLIENT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: primary_client_password
+              name: mariadb-secret
+        - name: MARIADB_REPLICA_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: replica_password
+              name: mariadb-secret
+        - name: MARIADB_REPLICA_CLIENT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: replica_client_password
+              name: mariadb-secret
+        image: {{REGISTRY_IMAGE}}
+        imagePullPolicy: Always
+        name: mariadb-ctr
+        ports:
+        - containerPort: 3306
+        volumeMounts:
+        - name: mariadb-dump-pvc-v
+          mountPath: /var/lib/mariadb-dump
+        - name: mariadb-pvc-v
+          mountPath: /var/lib/mariadb
+        - name: mariadb-cm-v
+          mountPath: /var/lib/mariadb-conf
+      volumes:
+      - name: mariadb-dump-pvc-v
+        persistentVolumeClaim:
+          claimName: mariadb-dump-pvc
+      - name: mariadb-pvc-v
+        persistentVolumeClaim:
+          claimName: mariadb-pvc
+      - name: mariadb-cm-v
+        configMap:
+          name: mariadb-cm

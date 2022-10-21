@@ -1,0 +1,78 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  labels:
+    mariadb: pv
+  name: mariadb-pv
+spec:
+  accessModes: 
+  - ReadWriteOnce
+  capacity: 
+    storage: 500M
+  local:
+    path: {{MARIADB_DATA_DIR}}
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: for-volume
+          operator: Exists
+  persistentVolumeReclaimPolicy: Retain
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    mariadb: pvc
+  name: mariadb-pvc
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 500M
+  selector:
+    matchLabels:
+      mariadb: pv
+  storageClassName: ""
+  volumeName: mariadb-pv
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  labels:
+    mariadb: dump-pv
+  name: mariadb-dump-pv
+spec:
+  accessModes: 
+  - ReadWriteOnce
+  capacity: 
+    storage: 500M
+  local:
+    path: {{MARIADB_DUMP_DATA_DIR}}
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: for-volume
+          operator: Exists
+  persistentVolumeReclaimPolicy: Retain
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    mariadb: dump-pvc
+  name: mariadb-dump-pvc
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 500M
+  selector:
+    matchLabels:
+      mariadb: dump-pv
+  storageClassName: ""
+  volumeName: mariadb-dump-pv
+
